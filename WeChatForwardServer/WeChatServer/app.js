@@ -6,7 +6,11 @@ var bodyParser = require('body-parser');
 var path = require('path');
 
 var app = express();
+var WechatAPI = require('wechat-api');
 
+const appid = 'wx5cae0238664dd2ca';
+const appsecret = '7dbee1945e8b6406510c44bfba7cb0eb';
+var api = new WechatAPI(appid, appsecret);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
@@ -16,7 +20,6 @@ app.use(express.query());
 
 const PORT = 80;
 const REMOTE_URL = "http://118.25.194.18";
-//const REMOTE_URL = "http://localhost:4390";
 
 var server = app.listen(PORT, function () {
     console.log("WeChat Forward Server listening on port " + PORT);
@@ -41,11 +44,13 @@ forward_socket.on('connect', function () {
 
     forward_socket.on('message', (weixin_message) => {
         console.log(weixin_message);
-        var replyMessage = {
-            touser: weixin_message.FromUserName,
-            text: 'Hello'
-        };
-        forward_socket.emit('data', replyMessage);
+
+        api.sendText(weixin_message.FromUserName, 'Hello World!', function (err, data, res) {
+            if (err) {
+                console.log(err);
+                return;
+            }
+        });
     });
 });
 

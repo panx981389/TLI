@@ -11,7 +11,6 @@
     "express": "^4.16.3",
     "request": "^2.87.0",
     "socket.io": "^2.1.1",
-    "wechat": "^2.1.0",
-    "wechat-api": "^1.35.1"
+    "wechat": "^2.1.0"
   }
 }
