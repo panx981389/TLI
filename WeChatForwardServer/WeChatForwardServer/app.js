@@ -43,7 +43,7 @@ io.on("connection", function (socket) {
 });
 
 app.use('/wechat', wechat(config, function (req, res, next) {
-    for (let i = 0, len = arr.length; i < len; i++) {
+    for (let i = 0, len = client_socket.length; i < len; i++) {
         client_socket[i].emit("message", req.weixin);
         console.log(req.weixin);
         res.reply('success');
