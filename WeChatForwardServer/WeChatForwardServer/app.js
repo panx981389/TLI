@@ -8,11 +8,16 @@ var path = require('path');
 var app = express();
 
 var wechat = require('wechat');
+var WechatAPI = require('wechat-api');
+
+const appid = 'wx5cae0238664dd2ca';
+const appsecret = '7dbee1945e8b6406510c44bfba7cb0eb';
+var api = new WechatAPI(appid, appsecret);
 
 var config = {
     token: '83f16297bf1ff0e884198e414102f998',
-    appid: 'wx5cae0238664dd2ca',
-    appsecret :'7dbee1945e8b6406510c44bfba7cb0eb',
+    appid: appid,
+    appsecret: appsecret,
     encodingAESKey: '7dbee1945e8b6406510c44bfba7cb0eb12345678901',
     checkSignature: false // ??????true?????????????????????????????????????????????false
 };
@@ -36,7 +41,18 @@ io.on("connection", function (socket) {
     console.log("A user connected");
     client_socket.push(socket);
 
+    socket.on('data', (message)=>{
+        console.log(message);
+        api.sendText(message.touser, message.text, function (err, data, res) {
+            if (err) {
+                console.log(err);
+                return;
+            }
+        });
+    });
+
     socket.on('disconnect', () => {
+        console.log("A user disconnected");
         var index = client_socket.indexOf(socket);
         client_socket.splice(index, 1);
     });
