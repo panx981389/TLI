@@ -44,7 +44,7 @@ io.on("connection", function (socket) {
 
 app.use('/wechat', wechat(config, function (req, res, next) {
     console.log(req.weixin);
-    res.reply('success');
+    res.reply();
     for (let i = 0, len = client_socket.length; i < len; i++) {
         client_socket[i].emit("message", req.weixin);
     }
