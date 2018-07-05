@@ -8,6 +8,24 @@ var path = require('path');
 var app = express();
 var WechatAPI = require('wechat-api');
 
+const Botkit = require('botkit');
+const xml = require('@xmpp/xml');
+
+
+var controller = Botkit.jabberbot({
+    json_file_store: './jabberbot/'
+});
+
+var bot = controller.spawn({
+    client: {
+        jid: 'xinpa2@jabberqa.cisco.com',
+        password: 'cisco123!@#',
+        host: "164-34-CUP-TJ.jabberqa.cisco.com",
+        port: 5222
+    }
+});
+
+
 const appid = 'wx5cae0238664dd2ca';
 const appsecret = '7dbee1945e8b6406510c44bfba7cb0eb';
 var api = new WechatAPI(appid, appsecret);
@@ -17,6 +35,8 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 app.use(express.query());
+
+
 
 const PORT = 80;
 const REMOTE_URL = "http://118.25.194.18";
@@ -39,18 +59,33 @@ io.on("connection", function (socket) {
     });
 });
 
+var weixin_user;
+
 forward_socket.on('connect', function () {
     console.log('Connect to forward server');
 
     forward_socket.on('message', (weixin_message) => {
         console.log(weixin_message);
+        weixin_user = weixin_message.FromUserName;
+        var msg = {
+            text: weixin_message.Content,
+            user: 'xinpa@jabberqa.cisco.com'
+        };
 
-        api.sendText(weixin_message.FromUserName, 'Hello World!', function (err, data, res) {
-            if (err) {
-                console.log(err);
-                return;
-            }
-        });
+        bot.say(msg);
     });
 });
+
+controller.hears([/.*/i], ['direct_mention', 'self_message', 'direct_message'], function (bot, message) {
+    var text = message.text;
+    if (!weixin_user)
+        return;
+    api.sendText(weixin_user, text, function (err, data, res) {
+        if (err) {
+            console.log(err);
+            return;
+        }
+    });
+});
+
 
