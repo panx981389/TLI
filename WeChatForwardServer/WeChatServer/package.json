@@ -14,5 +14,6 @@
     "socket.io": "^2.1.1",
     "socket.io-client": "^2.1.1",
     "wechat-api": "^1.35.1"
+    "mongodb": "^2.2.33"
   }
 }

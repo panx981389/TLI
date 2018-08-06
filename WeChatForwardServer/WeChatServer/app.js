@@ -11,6 +11,11 @@ var WechatAPI = require('wechat-api');
 const Botkit = require('botkit');
 const xml = require('@xmpp/xml');
 
+// database configurations
+var MongoClient = require('mongodb').MongoClient;
+var dbConnectionUrl = 'mongodb://localhost:27017/tliproject';
+var dbCollection = 'messages';
+
 
 var controller = Botkit.jabberbot({
     json_file_store: './jabberbot/'
@@ -73,6 +78,35 @@ forward_socket.on('connect', function () {
         };
 
         bot.say(msg);
+        
+        // save message to mongodb
+        var documents = [{
+            'toUser': weixin_message.ToUserName,
+            'fromUser': weixin_message.FromUserName,
+            'createTime': weixin_message.CreateTime,
+            'msgType': weixin_message.MsgType,
+            'content': weixin_message.Content,
+            'msgId': weixin_message.MsgId
+        }];
+
+        MongoClient.connect(dbConnectionUrl, function(error, db) {
+            if(error) {
+                console.log("Connection to server failed");
+                return;
+            }
+  
+            console.log("Connected correctly to server");
+
+            var collection = db.collection(dbCollection);
+            collection.insert(documents, function(error, result) {
+                if(!error) {
+                    console.log("Success :" + result.ops.length + " chapters inserted!");
+                } else {
+                    console.log("Some error was encountered!");
+                }
+                db.close();
+            });
+        });
     });
 });
 
