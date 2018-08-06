@@ -100,7 +100,7 @@ forward_socket.on('connect', function () {
             var collection = db.collection(dbCollection);
             collection.insert(documents, function(error, result) {
                 if(!error) {
-                    console.log("Success :" + result.ops.length + " chapters inserted!");
+                    console.log("Success :" + result.ops.length + " message(s) inserted!");
                 } else {
                     console.log("Some error was encountered!");
                 }
