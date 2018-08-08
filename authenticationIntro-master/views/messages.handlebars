@@ -1,0 +1,14 @@
+
+<div>
+    <ul>
+        {{#each fromDB}}
+        <div>
+        	<li>{{fromUser}}</li>
+        	{{content}}
+        	<form method="POST">
+        		<input class="chat-button" type="submit" name="{{_id}}" value="Chat"></input>
+        	</form>
+        </div>
+        {{/each}}
+    </ul>
+</div>
