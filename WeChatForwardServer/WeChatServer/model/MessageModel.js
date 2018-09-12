@@ -1,18 +1,33 @@
 var mongoose = require('mongoose');
 
-var SessionMessageSchema = new mongoose.Schema({
-    session_id : String,
+var MessageSchema = new mongoose.Schema({
+    from_webchat : Boolean,
+    type:String,
+    content:String,
+    id : String
+});
+
+var MessageModel = mongoose.model('Message', MessageSchema);
+
+var SessionSchema = new mongoose.Schema({
     wechat_id : String,
     jabber_id:String,
     session_state : Number,
-    messages : [{
-        from:String,
-        to:String,
-        type:String,
-        content:String,
-        id : String
-    }],
+    last_message: String,
+    messages : [{ type: mongoose.Schema.Types.ObjectId, ref: 'Message' }],
   });
+  
 
-  var SessionMessage = mongoose.model('SessionMessage', SessionMessageSchema);
-module.exports = SessionMessage;
+SessionSchema.methods.toJSON = function(){
+    return {
+      id: this._id,
+      wechat_id: this.wechat_id,
+      jabber_id: this.jabber_id,
+      session_state: this.session_state,
+      last_message: this.last_message
+    };
+  };
+
+var SessionModel = mongoose.model('Session', SessionSchema);
+
+module.exports = {SessionModel, MessageModel};
