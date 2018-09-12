@@ -13,7 +13,7 @@
     "request": "^2.87.0",
     "socket.io": "^2.1.1",
     "socket.io-client": "^2.1.1",
-    "wechat-api": "^1.35.1"
-    "mongodb": "^2.2.33"
+    "wechat-api": "^1.35.1",
+    "mongoose": "5.2.13"
   }
 }

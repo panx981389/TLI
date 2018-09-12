@@ -8,16 +8,20 @@ var path = require('path');
 var app = express();
 var WechatAPI = require('wechat-api');
 
-const Botkit = require('botkit');
+const JabberBot = require('./botkit/JabberBot.js');
 const xml = require('@xmpp/xml');
 
 // database configurations
-var MongoClient = require('mongodb').MongoClient;
-var dbConnectionUrl = 'mongodb://localhost:27017/tliproject';
-var dbCollection = 'messages';
+var mongoose = require('mongoose');
+mongoose.connect('mongodb://localhost:27017/tliproject');
 
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function() {
+  console.log('mongodb connected');
+});
 
-var controller = Botkit.jabberbot({
+var controller = JabberBot({
     json_file_store: './jabberbot/'
 });
 
@@ -64,56 +68,32 @@ io.on("connection", function (socket) {
     });
 });
 
-var weixin_user;
+var weinxin_user_map = new Map();
 
 forward_socket.on('connect', function () {
     console.log('Connect to forward server');
 
     forward_socket.on('message', (weixin_message) => {
         console.log(weixin_message);
-        weixin_user = weixin_message.FromUserName;
-        var msg = {
-            text: weixin_message.Content,
-            user: 'xinpa@jabberqa.cisco.com'
-        };
+        var weixin_user = weixin_message.FromUserName;
 
-        bot.say(msg);
-        
-        // save message to mongodb
-        var documents = [{
-            'toUser': weixin_message.ToUserName,
-            'fromUser': weixin_message.FromUserName,
-            'createTime': weixin_message.CreateTime,
-            'msgType': weixin_message.MsgType,
-            'content': weixin_message.Content,
-            'msgId': weixin_message.MsgId
-        }];
-
-        MongoClient.connect(dbConnectionUrl, function(error, db) {
-            if(error) {
-                console.log("Connection to server failed");
-                return;
-            }
-  
-            console.log("Connected correctly to server");
-
-            var collection = db.collection(dbCollection);
-            collection.insert(documents, function(error, result) {
-                if(!error) {
-                    console.log("Success :" + result.ops.length + " message(s) inserted!");
-                } else {
-                    console.log("Some error was encountered!");
-                }
-                db.close();
-            });
-        });
+        weinxin_user_map.set('xinpa3', weixin_user);
+        bot.startGroupChat(weixin_user, 'xinpa3@jabberqa.cisco.com', function(){
+            bot.say({
+                text: weixin_message.Content,
+                user: weixin_user + '@'+ bot.getMUCServer(),
+                 group: true,
+                 }); 
+        });        
     });
 });
 
-controller.hears([/.*/i], ['direct_mention', 'self_message', 'direct_message'], function (bot, message) {
+controller.hears([/.*/i], ['direct_mention', 'self_message', 'direct_message', 'plain_group_message'], function (bot, message) {
     var text = message.text;
-    if (!weixin_user)
-        return;
+    var from = message.from_jid;
+    var weixin_user = weinxin_user_map.get(from.split('@')[0]);
+    if (!weixin_user || weixin_user.length == 0)
+        weixin_user = message.user.split('@')[0];
     api.sendText(weixin_user, text, function (err, data, res) {
         if (err) {
             console.log(err);
