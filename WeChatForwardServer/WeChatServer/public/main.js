@@ -133,17 +133,48 @@ $(function() {
   });
   // Socket events
 
+  const SetNotificationBadge = (number) => {
+    window.external.SetNotificationBadge(number.toString());
+  };
+
+  var all_datas = [];
+  const removeData = (data) =>{
+    for(var i=0; i<all_datas.length;i++){
+      if (data.id == all_datas[i].id)
+      {
+        all_datas.splice(i, 1);
+        return;
+      }
+    }
+  };
+
+  const addData = (data) =>{
+    for(var i=0; i<all_datas.length;i++){
+      if (data.id == all_datas[i].id)
+      {
+        return;
+      }
+    }
+    all_datas.push(data);
+  };
   // Whenever the server emits 'new message', update the chat body
   socket.on('all message', (datas) => {
     addChatMessages(datas);
+    all_datas = datas;
+    SetNotificationBadge(all_datas.length);
   });
 
   socket.on('new message', (data) => {
     addChatMessage(data);
+    addData(data);
+
+    SetNotificationBadge(all_datas.length);
   });
 
   socket.on('remove message', (data) => {
     removeChatMessage(data);
+    removeData(data);
+    SetNotificationBadge(all_datas.length);
   });
 
   socket.on('pick message', (data) => {
