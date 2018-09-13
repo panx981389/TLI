@@ -183,6 +183,8 @@ forward_socket.on('connect', function () {
 
     forward_socket.on('message', (weixin_message) => {
         console.log(weixin_message);
+        if (weixin_message.MsgType != 'text')
+            return;
 
         var messageData = new MessageModel({
             from_webchat:true,
