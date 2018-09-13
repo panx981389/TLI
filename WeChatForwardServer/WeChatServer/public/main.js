@@ -77,6 +77,14 @@ $(function() {
     }
   };
 
+  const updateChatMessage = (data) =>{
+    var message = $('#' + data.id);
+    if (message)
+    {
+      message.children(".messageBody").text(data.last_message);
+    }
+  }; 
+
 
   // Adds a message element to the messages and scrolls to the bottom
   // el - The element to add as a message
@@ -175,6 +183,10 @@ $(function() {
     removeChatMessage(data);
     removeData(data);
     SetNotificationBadge(all_datas.length);
+  });
+
+  socket.on('update message', (data) => {
+    updateChatMessage(data);
   });
 
   socket.on('pick message', (data) => {

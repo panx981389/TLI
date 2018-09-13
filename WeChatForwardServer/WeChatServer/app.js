@@ -223,6 +223,10 @@ forward_socket.on('connect', function () {
                     session.last_message = message.content;
                     session.messages.push(message);
                     session.save();
+                    client_socket.forEach(function(socket)
+                    {
+                        socket.emit('update message', session);
+                    });
                 });
                 var roomname = weixin_message.FromUserName.toLowerCase() +'_' + session.jabber_id.split('@')[0];
                 bot.startGroupChat(roomname, session.jabber_id, function(){
@@ -253,6 +257,11 @@ forward_socket.on('connect', function () {
                             session.last_message = message.content;
                             session.messages.push(message);
                             session.save();
+
+                            client_socket.forEach(function(socket)
+                            {
+                                socket.emit('update message', session);
+                            });
                         });
                     }
                     else
@@ -324,6 +333,10 @@ controller.hears([/.*/i], ['direct_mention', 'self_message', 'direct_message', '
                 session.last_message = text;
                 session.messages.push(message);
                 session.save();
+                client_socket.forEach(function(socket)
+                {
+                    socket.emit('update message', session);
+                });
             });
 
         api.sendText(session.wechat_id, text, function (err, data, res) {
