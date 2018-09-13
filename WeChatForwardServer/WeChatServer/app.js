@@ -98,6 +98,8 @@ io.on("connection", function (socket) {
         socket_user_map.delete(socket);
     });
 
+    //When new jabber connect
+    //Associate a input jid with the socket and then send back all the sessions not hangup
     socket.on('add user', (username)=>{
         socket_user_map.set(socket, username);
 
@@ -106,6 +108,9 @@ io.on("connection", function (socket) {
         });    
     });
 
+    //hangup means jabber end session with the wechat customer
+    //this operation will change session_state to 2
+    //and notify client to remove this session from their list
     socket.on('hangup', (session_id)=>{
         var pickup_jid = socket_user_map.get(socket);
         if (!pickup_jid)
@@ -132,6 +137,9 @@ io.on("connection", function (socket) {
         });
     });
 
+    //pickup means jabber start chat session with the wechat customer
+    //this operation will change session_state to 1 
+    //and jabber bot will send all message associate with session to the jabber user
     socket.on('pickup', (session_id)=>{
         var pickup_jid = socket_user_map.get(socket);
         if (!pickup_jid)
@@ -176,6 +184,11 @@ io.on("connection", function (socket) {
 });
 
 
+//When receive wechat message.
+//Find the session for the wechat customer
+//If session_state == 1 exist, the session between this wechat customer and a jabber jid is created, save the message to the session and send the message to the jabber
+//If session_state == 0 exist, the session for the wechat customer has created, but not bind to a jabber jid. Save the message 
+//If session not exist, create the session, and notifer client to update the session list.
 const REMOTE_URL = "http://118.25.194.18";
 var forward_socket = require('socket.io-client')(REMOTE_URL);
 forward_socket.on('connect', function () {
@@ -281,6 +294,8 @@ forward_socket.on('connect', function () {
     });
 });
 
+//When jabber bot receive XMPP message from jabber, find session with the jabber_id, 
+// append message to this session and then send the message to wechat customer.
 controller.hears([/.*/i], ['direct_mention', 'self_message', 'direct_message', 'plain_group_message'], function (bot, message) {
     var text = message.text;
     var from = message.from_jid;
