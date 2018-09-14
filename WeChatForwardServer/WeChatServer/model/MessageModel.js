@@ -13,6 +13,8 @@ var SessionSchema = new mongoose.Schema({
     wechat_id : String,
     jabber_id:String,
     session_state : Number,
+    wechat_nickname:String,
+    wechat_headimgurl : String,
     last_message: String,
     messages : [{ type: mongoose.Schema.Types.ObjectId, ref: 'Message' }],
   });
@@ -24,6 +26,8 @@ SessionSchema.methods.toJSON = function(){
       wechat_id: this.wechat_id,
       jabber_id: this.jabber_id,
       session_state: this.session_state,
+      wechat_nickname:this.wechat_nickname,
+      wechat_headimgurl: this.wechat_headimgurl,
       last_message: this.last_message
     };
   };

@@ -43,6 +43,9 @@ $(function() {
   
   // Adds the visual chat message to the message list
   const addChatMessage = (data, options) => {
+    var $headerBodyDiv = $('<img class="headerBody">').attr("src",data.wechat_headimgurl).attr("width", '35').attr("height", '35');
+    var $userBodyDiv = $('<span class="userBody">')
+      .text(data.wechat_nickname);
     var $messageBodyDiv = $('<span class="messageBody">')
       .text(data.last_message);
     if (data.session_state == 0)
@@ -52,7 +55,7 @@ $(function() {
         socket.emit('pickup', data.id);
       });
       var $messageDiv = $('<li class="message"/>').attr('id', data.id)
-       .append($messageBodyDiv, $pickupDiv);
+       .append($headerBodyDiv, $userBodyDiv, $messageBodyDiv, $pickupDiv);
 
       addMessageElement($messageDiv, options);
     }
@@ -63,7 +66,7 @@ $(function() {
         socket.emit('hangup', data.id);
       });
       var $messageDiv = $('<li class="message"/>').attr('id', data.id)
-       .append($messageBodyDiv, $hangupDiv);
+       .append($headerBodyDiv, $userBodyDiv, $messageBodyDiv, $hangupDiv);
 
       addMessageElement($messageDiv, options);
     }    

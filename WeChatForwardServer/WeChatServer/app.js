@@ -152,7 +152,7 @@ io.on("connection", function (socket) {
                 return;
             }
             
-            var roomname = session.wechat_id.toLowerCase() +'_' + pickup_jid.split('@')[0];
+            var roomname = session.wechat_nickname.toLowerCase() +'_' + pickup_jid.split('@')[0] + '_' + session.wechat_id.toLowerCase();
             bot.startGroupChat(roomname, pickup_jid, function(){
                 session.messages.forEach((message)=>{
                     if (message.from_webchat)
@@ -228,7 +228,7 @@ forward_socket.on('connect', function () {
                         socket.emit('update message', session);
                     });
                 });
-                var roomname = weixin_message.FromUserName.toLowerCase() +'_' + session.jabber_id.split('@')[0];
+                var roomname = session.wechat_nickname.toLowerCase() +'_' + session.jabber_id.split('@')[0] + '_' + session.wechat_id.toLowerCase();
                 bot.startGroupChat(roomname, session.jabber_id, function(){
                     bot.say({
                         text: weixin_message.Content,
@@ -266,36 +266,42 @@ forward_socket.on('connect', function () {
                     }
                     else
                     {
-                        messageData.save( function(err, message) {
-                            if (err)
-                            {
-                                console.log(err)
-                                return;
-                            }
-                            var sessionData = new SessionModel({
-                                wechat_id: weixin_message.FromUserName,
-                                jabber_id: '',
-                                session_state: 0,
-                                last_message : messageData.content,
-                                messages: [
-            
-                                ],
-                              });
-
-                              sessionData.messages.push(message);
-                              sessionData.save(function(err, newsession){
+                        api.getUser(weixin_message.FromUserName, function(err,user) {
+                            var nickname = err ? '': user.nickname;
+                            var headimgurl = err?'':user.headimgurl;
+                            messageData.save( function(err, message) {
                                 if (err)
                                 {
                                     console.log(err)
                                     return;
                                 }
-            
-                                client_socket.forEach(function(socket)
-                                {
-                                    socket.emit('new message', newsession);
-                                });
-                              });
-                        });                        
+                                var sessionData = new SessionModel({
+                                    wechat_id: weixin_message.FromUserName,
+                                    jabber_id: '',
+                                    session_state: 0,
+                                    wechat_nickname : nickname,
+                                    wechat_headimgurl : headimgurl,
+                                    last_message : messageData.content,
+                                    messages: [
+                
+                                    ],
+                                  });
+    
+                                  sessionData.messages.push(message);
+                                  sessionData.save(function(err, newsession){
+                                    if (err)
+                                    {
+                                        console.log(err)
+                                        return;
+                                    }
+                
+                                    client_socket.forEach(function(socket)
+                                    {
+                                        socket.emit('new message', newsession);
+                                    });
+                                  });
+                            });     
+                        });             
                     }
                 });
             }

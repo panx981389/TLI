@@ -123,18 +123,45 @@ ul {
   padding: 10px 20px 10px 20px;
 }
 
+.messag {
+  height : 35
+}
+
+.message:hover {
+  background-color:#EBEBEC;
+  display:block
+}
+
 .message.typing .messageBody {
   color: gray;
 }
 
+.headerBody {
+
+}
+
+.userBody {
+  font-size:15px;
+  padding: 10px 10px 20px 10px;
+}
+
+.messageBody {
+  font-size:10px;
+  padding: 20px 10px 10px 10px;
+}
+
 .callButton {
-  content:url('img/call1.png');
+  position:relative;
+  content:url('img/call.png');
   background-color:#EBEBEC;
+  float:right;
 }
 
 .endCallButton {
-  content:url('img/endcall1.png');
+  position:relative;
+  content:url('img/endcall.png');
   background-color:#EBEBEC;
+  float:right;
 }
 
 .username {
