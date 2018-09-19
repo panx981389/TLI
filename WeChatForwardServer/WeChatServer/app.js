@@ -281,22 +281,14 @@ forward_socket.on('connect', function () {
                             var post_form = Object.assign({}, xiaoiForm, {question: messageData.content, userId: weixin_message.FromUserName});  
                             request.post(xiaoiUrl, {form: post_form}, function(err, httpResponse, strBody){
                                 var session_state_value = 0;
+                                var objBody = {};
                                 try {
-                                    var objBody = JSON.parse(strBody);
-                                    if ('result' in objBody && objBody['result'] != 'no answer') {
-                                        session_state_value = 2;
-                                        api.sendText(weixin_message.FromUserName, objBody['result'], function (err, data, res) {
-                                            if (err) {
-                                                console.log(err);
-                                                return;
-                                            }
-                                        });
-                                    }
+                                    objBody = JSON.parse(strBody);
                                 } catch(e) {
                                     console.log("Failed to parse xiaoi response body: " + strBody + " with " + JSON.stringify({"err": e}));
                                 }
 
-                                messageData.save( function(err, message) {
+                                function save_callback(err, message) {
                                     if (err)
                                     {
                                         console.log(err)
@@ -327,7 +319,22 @@ forward_socket.on('connect', function () {
                                             socket.emit('new message', newsession);
                                         });
                                       });
-                                });
+                                };
+
+                                if ('result' in objBody && objBody['result'] != 'no answer') {
+                                    api.sendText(weixin_message.FromUserName, objBody['result'], function (err, data, res) {
+                                        if (err) {
+                                            console.log(err);
+                                        }
+                                        else{
+                                            session_state_value = 2;
+                                        }
+                                        messageData.save(save_callback);
+                                    });
+                                }
+                                else{
+                                    messageData.save(save_callback);
+                                }
                             });     
                         });             
                     }
