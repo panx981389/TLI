@@ -37,6 +37,15 @@ var bot = controller.spawn({
     }
 });
 
+var xiaoiUrl = 'http://cloud.xiaoi.com/apiDebug/apiDebug!ask.do';
+var xiaoiForm = {
+    userId: 'userId',           // this can be any value
+    question: '',               // should be replaced with real message
+    type: '0',
+    appKey: 'p8V24h8dtBNV',
+    appSecret: '8wpB00aMOISueYhsqqqV',
+    platform: 'custom'
+};
 
 const appid = 'wx5cae0238664dd2ca';
 const appsecret = '7dbee1945e8b6406510c44bfba7cb0eb';
@@ -269,37 +278,56 @@ forward_socket.on('connect', function () {
                         api.getUser(weixin_message.FromUserName, function(err,user) {
                             var nickname = err ? '': user.nickname;
                             var headimgurl = err?'':user.headimgurl;
-                            messageData.save( function(err, message) {
-                                if (err)
-                                {
-                                    console.log(err)
-                                    return;
+                            var post_form = Object.assign({}, xiaoiForm, {question: messageData.content, userId: weixin_message.FromUserName});  
+                            request.post(xiaoiUrl, {form: post_form}, function(err, httpResponse, strBody){
+                                var session_state_value = 0;
+                                try {
+                                    var objBody = JSON.parse(strBody);
+                                    if ('result' in objBody && objBody['result'] != 'no answer') {
+                                        session_state_value = 2;
+                                        api.sendText(weixin_message.FromUserName, objBody['result'], function (err, data, res) {
+                                            if (err) {
+                                                console.log(err);
+                                                return;
+                                            }
+                                        });
+                                    }
+                                } catch(e) {
+                                    console.log("Failed to parse xiaoi response body: " + strBody + " with " + JSON.stringify({"err": e}));
                                 }
-                                var sessionData = new SessionModel({
-                                    wechat_id: weixin_message.FromUserName,
-                                    jabber_id: '',
-                                    session_state: 0,
-                                    wechat_nickname : nickname,
-                                    wechat_headimgurl : headimgurl,
-                                    last_message : messageData.content,
-                                    messages: [
-                
-                                    ],
-                                  });
-    
-                                  sessionData.messages.push(message);
-                                  sessionData.save(function(err, newsession){
+
+                                messageData.save( function(err, message) {
                                     if (err)
                                     {
                                         console.log(err)
                                         return;
                                     }
-                
-                                    client_socket.forEach(function(socket)
-                                    {
-                                        socket.emit('new message', newsession);
-                                    });
-                                  });
+                                    var sessionData = new SessionModel({
+                                        wechat_id: weixin_message.FromUserName,
+                                        jabber_id: '',
+                                        session_state: session_state_value,
+                                        wechat_nickname : nickname,
+                                        wechat_headimgurl : headimgurl,
+                                        last_message : messageData.content,
+                                        messages: [
+                    
+                                        ],
+                                      });
+        
+                                      sessionData.messages.push(message);
+                                      sessionData.save(function(err, newsession){
+                                        if (err)
+                                        {
+                                            console.log(err)
+                                            return;
+                                        }
+                    
+                                        client_socket.forEach(function(socket)
+                                        {
+                                            socket.emit('new message', newsession);
+                                        });
+                                      });
+                                });
                             });     
                         });             
                     }
