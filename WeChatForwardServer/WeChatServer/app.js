@@ -282,10 +282,12 @@ forward_socket.on('connect', function () {
                             request.post(xiaoiUrl, {form: post_form}, function(err, httpResponse, strBody){
                                 var session_state_value = 0;
                                 var objBody = {};
+
+                                console.log(">> Got xiaoi response body: " + strBody);
                                 try {
                                     objBody = JSON.parse(strBody);
                                 } catch(e) {
-                                    console.log("Failed to parse xiaoi response body: " + strBody + " with " + JSON.stringify({"err": e}));
+                                    console.log("Failed to parse xiaoi response:" + JSON.stringify({"err": e}));
                                 }
 
                                 function save_callback(err, message) {
@@ -314,10 +316,12 @@ forward_socket.on('connect', function () {
                                             return;
                                         }
                     
-                                        client_socket.forEach(function(socket)
-                                        {
-                                            socket.emit('new message', newsession);
-                                        });
+                                        if (session_state_value < 2) {
+                                            client_socket.forEach(function(socket)
+                                            {
+                                                socket.emit('new message', newsession);
+                                            });
+                                        }
                                       });
                                 };
 
