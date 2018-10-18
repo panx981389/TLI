@@ -39,11 +39,11 @@ var bot = controller.spawn({
 
 var xiaoiUrl = 'http://cloud.xiaoi.com/apiDebug/apiDebug!ask.do';
 var xiaoiForm = {
-    userId: 'userId',           // this can be any value
+    userId: 'panx981389',           // this can be any value
     question: '',               // should be replaced with real message
     type: '0',
-    appKey: 'p8V24h8dtBNV',
-    appSecret: '8wpB00aMOISueYhsqqqV',
+    appKey: 'FFIGO3YvyYnz',
+    appSecret: 'Dx0WEgdBzOwzex4JcdSB',
     platform: 'custom'
 };
 
